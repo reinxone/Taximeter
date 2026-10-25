@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Таксометр Yandex Taxi Moldova — БелТАКС</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Courier+Prime:wght@400;700&display=swap');
+
+        body {
+            background: #0d0f12;
+            color: #d1d5db;
+            font-family: 'Share Tech Mono', monospace;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* LCD Digital Font Effect */
+        .font-lcd {
+            font-family: 'VT323', monospace;
+        }
+
+        /* BelTAX Matte Black Casing */
+        .beltax-case {
+            background: linear-gradient(170deg, #2b2e34 0%, #17181c 40%, #0d0e11 100%);
+            box-shadow: 
+                0 25px 60px rgba(0,0,0,0.95),
+                inset 0 1px 2px rgba(255,255,255,0.15),
+                inset 0 -3px 6px rgba(0,0,0,0.8);
+            border: 2px solid #090a0c;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        /* Amber LCD Backlight Glass Screen */
+        .lcd-screen {
+            background: #f7a000;
+            background: radial-gradient(circle at 50% 40%, #ffa807 0%, #e68a00 85%, #be6d00 100%);
+            border: 5px solid #141518;
+            box-shadow: 
+                inset 0 0 18px rgba(0, 0, 0, 0.7),
+                inset 0 2px 4px rgba(0, 0, 0, 0.8),
+                0 0 15px rgba(255, 153, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Segment Grid Overlay for authentic LCD look */
+        .lcd-screen::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(0,0,0,0.06) 50%, rgba(0,0,0,0) 50%);
+            background-size: 100% 4px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Liquid Crystal Dark Gray Segments */
+        .lcd-text {
+            color: #1c1503;
+            text-shadow: 1px 1px 0px rgba(255, 200, 100, 0.4);
+        }
+
+        .lcd-ghost {
+            color: rgba(60, 40, 0, 0.08);
+            position: absolute;
+            z-index: 1;
+        }
+
+        /* Hardware Keypad Panel (White outline frame with 4 buttons) */
+        .keypad-frame {
+            background: #dedfde;
+            border: 2px solid #909291;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.6);
+            border-radius: 4px;
+            padding: 3px;
+        }
+
+        .key-btn {
+            background: #e2e4e3;
+            border: 1px solid #7a7c7b;
+            box-shadow: 
+                inset 0 1px 0 #ffffff,
+                0 2px 0 #5c5e5d,
+                0 3px 4px rgba(0,0,0,0.4);
+            border-radius: 3px;
+            transition: all 0.05s ease;
+        }
+        .key-btn:active {
+            transform: translateY(2px);
+            box-shadow: 
+                inset 0 1px 2px rgba(0,0,0,0.6),
+                0 0 1px #5c5e5d;
+        }
+
+        /* Thermal Printer Slot & Paper Roll Back */
+        .printer-housing {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 26px;
+            background: #181a1d;
+            border: 2px solid #0a0b0d;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            box-shadow: inset 0 3px 5px rgba(255,255,255,0.08);
+        }
+        .receipt-slot {
+            width: 170px;
+            height: 5px;
+            background: #000;
+            border-radius: 3px;
+            margin: 10px auto 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.9);
+        }
+
+        /* Hologram & Specs Plate */
+        .specs-plate {
+            background: #22252a;
+            border: 1px solid #3d4149;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.8);
+            color: #9ab;
+            font-size: 8px;
+            line-height: 1.15;
+        }
+
+        .holo-sticker {
+            background: linear-gradient(135deg, #e6c875, #77b8cf, #d889b7, #85cf83, #e6c875);
+            background-size: 200% 200%;
+            animation: holoShift 4s ease infinite;
+            border-radius: 50%;
+            box-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+
+        @keyframes holoShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Thermal Receipt Modal Paper */
+        .paper-receipt {
+            font-family: 'Courier Prime', monospace;
+            background: #fcfbfa;
+            color: #111;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            background-image: repeating-linear-gradient(#fcfbfa, #fcfbfa 23px, #f2eee3 24px);
+        }
+
+        .jagged-bottom::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(-135deg, #fcfbfa 5px, transparent 0), linear-gradient(135deg, #fcfbfa 5px, transparent 0);
+            background-size: 10px 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-3 sm:p-6 select-none">
+
+    <!-- Header info -->
+    <header class="text-center mb-6">
+        <h1 class="text-xl sm:text-2xl font-bold tracking-wider text-amber-500 uppercase flex items-center justify-center gap-2">
+            🚕 Yandex Taxi Moldova
+        </h1>
+        <p class="text-xs sm:text-sm text-gray-400 mt-1">Электронный таксометр 2000-х (Молдова / MDL)</p>
+    </header>
+
+    <!-- MAIN DEVICE BODY -->
+    <div class="relative w-full max-w-2xl mt-4">
+
+        <!-- Top Printer Extension -->
+        <div class="printer-housing">
+            <div class="receipt-slot"></div>
+        </div>
+
+        <!-- BELTAX TAXIMETER CHASSIS -->
+        <div class="beltax-case p-4 sm:p-6 relative z-10">
+
+            <!-- DISPLAY SECTION -->
+            <div class="lcd-screen rounded-md p-4 sm:p-5 mb-5 h-36 sm:h-44 flex flex-col justify-between shadow-inner">
+                
+                <!-- TOP LINE: LARGE FARE DISPLAY -->
+                <div class="flex justify-between items-baseline relative z-10">
+                    <span class="text-xs sm:text-sm font-bold text-black/70 uppercase tracking-tight">СУММА (MDL)</span>
+                    <div class="relative text-right">
+                        <!-- LCD Ghost Background -->
+                        <div class="lcd-ghost font-lcd text-5xl sm:text-6xl tracking-wider">8888.88</div>
+                        <!-- Active Fare Digits -->
+                        <div class="lcd-text font-lcd text-5xl sm:text-6xl font-bold tracking-wider relative z-10" id="disp-fare">35.00</div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM LINE: MULTI-INFO (DIST / TARIFF / TIME or TRAFFIC) -->
+                <div class="grid grid-cols-3 items-end pt-2 border-t border-black/20 relative z-10">
+                    
+                    <!-- Left: Distance -->
+                    <div>
+                        <div class="text-[10px] sm:text-xs font-bold text-black/60">КМ</div>
+                        <div class="relative">
+                            <div class="lcd-ghost font-lcd text-2xl sm:text-3xl">888.8</div>
+                            <div class="lcd-text font-lcd text-2xl sm:text-3xl font-bold relative z-10" id="disp-dist">0.0</div>
+                        </div>
+                    </div>
+
+                    <!-- Center: Rate & Traffic Badge -->
+                    <div class="text-center pb-1">
+                        <span class="text-xs sm:text-sm font-black text-black/80 bg-black/10 px-2 py-0.5 rounded uppercase" id="disp-tariff">
+                            Т1 ДНЕВНОЙ
+                        </span>
+                        <div class="text-[10px] font-bold text-black/70 mt-1 uppercase" id="disp-traffic-label">
+                            ПОТОК: ГОРОД
+                        </div>
+                    </div>
+
+                    <!-- Right: Time -->
+                    <div class="text-right">
+                        <div class="text-[10px] sm:text-xs font-bold text-black/60">ВРЕМЯ / СТАТУС</div>
+                        <div class="relative">
+                            <div class="lcd-ghost font-lcd text-2xl sm:text-3xl">88:88</div>
+                            <div class="lcd-text font-lcd text-2xl sm:text-3xl font-bold relative z-10" id="disp-time">00:00</div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- LOWER CONTROLS & HARDWARE SPECS GRID -->
+            <div class="grid grid-cols-12 gap-3 sm:gap-4 items-end">
+                
+                <!-- LEFT 4-BUTTON HARDWARE KEYPAD -->
+                <div class="col-span-6 sm:col-span-5">
+                    <div class="keypad-frame grid grid-cols-4 gap-1 sm:gap-1.5">
+                        
+                        <!-- RED CIRCLE BUTTON (START / ENTER) -->
+                        <button id="btn-red" class="key-btn h-12 sm:h-14 flex items-center justify-center cursor-pointer" title="Пуск / Пауза">
+                            <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-red-600 border border-red-800 shadow-inner flex items-center justify-center">
+                                <div class="w-2 h-2 rounded-full bg-red-300"></div>
+                            </div>
+                        </button>
+
+                        <!-- DOWN ARROW BUTTON (TARIFF SWITCH) -->
+                        <button id="btn-down" class="key-btn h-12 sm:h-14 flex items-center justify-center cursor-pointer text-gray-800 font-black text-lg" title="Смена тарифа (Дневной/Ночной)">
+                            ▼
+                        </button>
+
+                        <!-- UP ARROW BUTTON (TRAFFIC CONDITION SWITCH) -->
+                        <button id="btn-up" class="key-btn h-12 sm:h-14 flex items-center justify-center cursor-pointer text-gray-800 font-black text-lg" title="Смена потока (Город/Трасса/Затор)">
+                            ▲
+                        </button>
+
+                        <!-- BLACK SQUARE BUTTON (STOP / PRINT RECEIPT) -->
+                        <button id="btn-square" class="key-btn h-12 sm:h-14 flex items-center justify-center cursor-pointer" title="Чек / Стоп">
+                            <div class="w-5 h-5 sm:w-6 sm:h-6 bg-gray-900 border border-black rounded-sm flex items-center justify-center">
+                                <div class="w-2 h-2 bg-gray-600"></div>
+                            </div>
+                        </button>
+
+                    </div>
+                    
+                    <!-- Key Legend helper -->
+                    <div class="flex justify-between text-[9px] text-gray-400 mt-1.5 px-1 font-mono">
+                        <span>● Пуск</span>
+                        <span>▼ Тариф</span>
+                        <span>▲ Поток</span>
+                        <span>■ Чек</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT TECHNICAL SPECIFICATIONS PLATE -->
+                <div class="col-span-6 sm:col-span-7 flex flex-col justify-between h-full space-y-2">
+                    
+                    <div class="flex items-center justify-between gap-2">
+                        <!-- Hologram verification sticker -->
+                        <div class="holo-sticker w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0 flex items-center justify-center text-[7px] font-bold text-black/70">
+                            2026<br>MD
+                        </div>
+
+                        <!-- Technical Metal Specs Plate -->
+                        <div class="specs-plate p-1.5 rounded w-full flex flex-col justify-center">
+                            <div class="font-bold text-gray-300 flex justify-between">
+                                <span>TAXIMETER TAXI-MD</span>
+                                <span>[EAC]</span>
+                            </div>
+                            <div>Модель: <b>БелТАКС-MD</b></div>
+                            <div class="text-gray-400">Сертификация: MD-180/2024</div>
+                            <div class="flex justify-between text-amber-500 font-mono mt-0.5">
+                                <span>№ 0052741</span>
+                                <span>Yandex Go</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Speaker grille and reset jack pinhole -->
+                    <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-gray-800/80">
+                        <!-- Speaker Holes -->
+                        <div class="flex gap-1">
+                            <div class="w-1.5 h-1.5 rounded-full bg-black border border-gray-700"></div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-black border border-gray-700"></div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-black border border-gray-700"></div>
+                            <div class="w-1.5 h-1.5 rounded-full bg-black border border-gray-700"></div>
+                        </div>
+
+                        <!-- Reset Jack Pinhole -->
+                        <div class="flex items-center gap-1.5 text-[9px] text-gray-500">
+                            <span>ПЛОМБА</span>
+                            <div class="w-3 h-3 rounded-full bg-gray-900 border-2 border-gray-700 flex items-center justify-center">
+                                <div class="w-1 h-1 rounded-full bg-black"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SIMULATION CONTROL BAR & AUDIO TOGGLE -->
+    <div class="mt-6 w-full max-w-2xl flex flex-wrap items-center justify-between gap-3 text-xs text-gray-400 bg-gray-900/60 p-3 rounded-xl border border-gray-800">
+        <div class="flex items-center gap-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="chk-sound" checked class="rounded accent-amber-500">
+                <span>🔊 Звуковые сигналы (Пищалка)</span>
+            </label>
+        </div>
+        <div class="flex gap-2">
+            <button id="btn-reset" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1 rounded transition cursor-pointer">
+                🔄 Сбросить счетчик [R]
+            </button>
+        </div>
+    </div>
+
+    <!-- TARIFF RATES SUMMARY FOOTER -->
+    <div class="mt-4 text-[11px] text-gray-400 text-center max-w-xl space-y-1 bg-gray-900/40 p-3 rounded-lg border border-gray-800/50">
+        <div class="font-bold text-amber-500 uppercase tracking-wide">Установленные тарифы Yandex Taxi Moldova:</div>
+        <p>• <b>Т1 Дневной:</b> Посадка <b>35 MDL</b> | <b>8 MDL/км</b> | Простой <b>1.50 MDL/мин</b></p>
+        <p>• <b>Т2 Ночной:</b> Посадка <b>45 MDL</b> | <b>11 MDL/км</b> | Простой <b>2.00 MDL/мин</b></p>
+        <p class="text-[10px] text-gray-500 mt-1">Переключение: ▼ Смена Тарифа | ▲ Смена Потока (Город / Трасса / Затор)</p>
+    </div>
+
+    <!-- RECEIPT MODAL -->
+    <div id="receipt-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="paper-receipt jagged-bottom w-full max-w-sm p-6 rounded-t shadow-2xl relative text-xs leading-relaxed transform transition-all duration-300 scale-95" id="receipt-card">
+            
+            <button id="btn-close-receipt" class="absolute top-2 right-3 text-gray-500 hover:text-black font-bold text-lg cursor-pointer">✕</button>
+
+            <!-- Brand Header -->
+            <div class="text-center border-b-2 border-dashed border-gray-400 pb-3 mb-3">
+                <div class="font-bold text-base tracking-wider">YANDEX TAXI MOLDOVA</div>
+                <div class="text-[10px] text-gray-600">SRL "Yandex.Taxi Chișinău"</div>
+                <div class="text-[10px] text-gray-600">Таксометр: БелТАКС-MD №0052741</div>
+                <div class="text-[10px] text-gray-600">г. Кишинев, Молдова</div>
+            </div>
+
+            <!-- Receipt Meta Details -->
+            <div class="space-y-1 mb-3 text-[11px]">
+                <div class="flex justify-between"><span>ЧЕК №:</span><span id="rec-id">BT-004921</span></div>
+                <div class="flex justify-between"><span>ДАТА И ВРЕМЯ:</span><span id="rec-date">24.10.2026 22:30</span></div>
+                <div class="flex justify-between"><span>ТАРИФ:</span><span id="rec-rate">Т1 (Дневной)</span></div>
+            </div>
+
+            <!-- Calculation Breakdowns -->
+            <div class="border-t border-b border-dashed border-gray-400 py-2 my-2 space-y-1 text-[11px]">
+                <div class="flex justify-between">
+                    <span>Посадка:</span>
+                    <span id="rec-flagdrop">35.00 MDL</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Пробег (<span id="rec-dist">0.0</span> км):</span>
+                    <span id="rec-dist-cost">0.00 MDL</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Простой / Затор (<span id="rec-wait-time">00:00</span>):</span>
+                    <span id="rec-wait-cost">0.00 MDL</span>
+                </div>
+            </div>
+
+            <!-- Total Price -->
+            <div class="flex justify-between items-center font-bold text-sm my-3 pt-1">
+                <span>ИТОГО К ОПЛАТЕ:</span>
+                <span class="text-base font-black" id="rec-total">35.00 MDL</span>
+            </div>
+
+            <div class="text-center text-[10px] text-gray-500 border-t border-dashed border-gray-400 pt-3 mt-3">
+                <p>Спасибо за поездку!</p>
+                <p>Mulțumim pentru călătorie!</p>
+                <div class="mt-2 text-[8px] font-mono tracking-widest uppercase">||| | ||||| ||| |||||| ||||| |||</div>
+            </div>
+
+            <button id="btn-pay-receipt" class="mt-4 w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-2 rounded shadow text-center cursor-pointer transition">
+                Оторвать чек / Завершить
+            </button>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT ENGINE & LOGIC -->
+    <script>
+        // --- Web Audio API Synth Effects for 2000s Beeps & Printer ---
+        class BelTaxAudio {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.ctx = new AudioContext();
+                    }
+                }
+            }
+
+            playKeyBeep() {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'square'; // Classic piezo buzzer sound
+                osc.frequency.setValueAtTime(1850, this.ctx.currentTime);
+                
+                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+
+            playFareIncrement() {
+ 
